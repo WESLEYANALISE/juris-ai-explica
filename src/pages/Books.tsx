@@ -5,7 +5,7 @@ import Layout from "@/components/layout";
 import BookList from "@/components/book-list";
 import SubjectList from "@/components/subject-list";
 import { BookData, SubjectData } from "@/types";
-import { fetchSubjects, fetchBooksBySubject } from "@/services/api";
+import { fetchSubjects, fetchBooksBySubject, preloadAllData } from "@/services/api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
@@ -20,12 +20,12 @@ export default function Books() {
   const [currentSubject, setCurrentSubject] = useState<string | null>(null);
   
   useEffect(() => {
-    const loadSubjects = async () => {
+    const loadData = async () => {
       try {
+        await preloadAllData(); // Preload all data into cache
         const subjectsData = await fetchSubjects();
         setSubjects(subjectsData);
         
-        // If we have a subject param, use it, otherwise use the first subject
         if (subject) {
           const matchedSubject = subjectsData.find(s => s.id === subject);
           if (matchedSubject) {
@@ -41,7 +41,7 @@ export default function Books() {
       }
     };
     
-    loadSubjects();
+    loadData();
   }, [subject]);
   
   useEffect(() => {
@@ -134,3 +134,4 @@ export default function Books() {
     </Layout>
   );
 }
+

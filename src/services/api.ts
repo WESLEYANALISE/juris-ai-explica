@@ -1,4 +1,5 @@
 import { BookData, SubjectData } from "@/types";
+import { cacheUtils } from "@/utils/cache";
 
 // The Google Sheet ID from the provided URL
 const SPREADSHEET_ID = "1-RVXr9sFxJOGmiHmTwqtLkFyykeBBBYPguaED58wVHQ";
@@ -40,8 +41,11 @@ export async function fetchSheetData(sheetName: string): Promise<any[]> {
   }
 }
 
-// This function fetches the sheet names (subjects)
-export async function fetchSubjects(): Promise<SubjectData[]> {
+// This function fetches all data and caches it
+async function fetchAndCacheAllData(): Promise<{
+  subjects: SubjectData[];
+  booksBySubject: Record<string, BookData[]>;
+}> {
   try {
     const response = await fetch(
       `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}?key=${API_KEY}`
@@ -55,35 +59,56 @@ export async function fetchSubjects(): Promise<SubjectData[]> {
     
     if (!data.sheets || data.sheets.length === 0) {
       console.warn("No sheets found in the spreadsheet");
-      return [];
+      return { subjects: [], booksBySubject: {} };
     }
 
-    // Fetch cover image for each subject from their respective sheets
-    const subjectsWithIcons = await Promise.all(data.sheets.map(async (sheet: any) => {
-      const sheetName = sheet.properties.title;
-      const sheetData = await fetchSheetData(sheetName);
-      
-      // Get the first available cover image from the sheet's books
-      const coverImage = sheetData.length > 0 ? 
-        (sheetData[0].CoverImage || sheetData[0].Imagem || "") : "";
-      
-      return {
-        name: sheetName,
-        id: sheetName.toLowerCase().replace(/\s+/g, '-'),
-        icon: coverImage
-      };
-    }));
+    const booksBySubject: Record<string, BookData[]> = {};
+    const subjects: SubjectData[] = await Promise.all(
+      data.sheets.map(async (sheet: any) => {
+        const sheetName = sheet.properties.title;
+        const books = await fetchBooksBySubject(sheetName);
+        booksBySubject[sheetName] = books;
+        
+        return {
+          name: sheetName,
+          id: sheetName.toLowerCase().replace(/\s+/g, '-'),
+          icon: books.length > 0 ? books[0].coverImage : ""
+        };
+      })
+    );
+
+    // Cache the data
+    cacheUtils.set(subjects, booksBySubject);
     
-    return subjectsWithIcons;
+    return { subjects, booksBySubject };
     
   } catch (error) {
-    console.error("Error fetching subjects:", error);
-    return [];
+    console.error("Error fetching data:", error);
+    return { subjects: [], booksBySubject: {} };
   }
+}
+
+// This function fetches the sheet names (subjects)
+export async function fetchSubjects(): Promise<SubjectData[]> {
+  // Try to get from cache first
+  const cached = cacheUtils.get();
+  if (cached) {
+    return cached.subjects;
+  }
+  
+  // If not in cache, fetch all data
+  const { subjects } = await fetchAndCacheAllData();
+  return subjects;
 }
 
 // This function fetches books by subject
 export async function fetchBooksBySubject(subject: string): Promise<BookData[]> {
+  // Try to get from cache first
+  const cached = cacheUtils.get();
+  if (cached && cached.booksBySubject[subject]) {
+    return cached.booksBySubject[subject];
+  }
+  
   try {
     const rows = await fetchSheetData(subject);
     
@@ -184,3 +209,11 @@ export const userStorage = {
     localStorage.setItem('juris-history', JSON.stringify(history));
   }
 };
+
+// New function to preload all data
+export async function preloadAllData(): Promise<void> {
+  const cached = cacheUtils.get();
+  if (!cached) {
+    await fetchAndCacheAllData();
+  }
+}
