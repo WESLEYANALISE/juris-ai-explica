@@ -1,4 +1,3 @@
-
 import { BookData, SubjectData } from "@/types";
 
 // The Google Sheet ID from the provided URL
@@ -58,22 +57,24 @@ export async function fetchSubjects(): Promise<SubjectData[]> {
       console.warn("No sheets found in the spreadsheet");
       return [];
     }
-    
-    // Get the first sheet to use as a sample for icons
-    const firstSheet = data.sheets[0].properties.title;
-    const sampleData = await fetchSheetData(firstSheet);
-    
-    // Map sheet names to subjects with a sample icon from the first book
-    return data.sheets.map((sheet: any) => {
+
+    // Fetch cover image for each subject from their respective sheets
+    const subjectsWithIcons = await Promise.all(data.sheets.map(async (sheet: any) => {
       const sheetName = sheet.properties.title;
-      const sampleIcon = sampleData.length > 0 ? sampleData[0].CoverImage || "" : "";
+      const sheetData = await fetchSheetData(sheetName);
+      
+      // Get the first available cover image from the sheet's books
+      const coverImage = sheetData.length > 0 ? 
+        (sheetData[0].CoverImage || sheetData[0].Imagem || "") : "";
       
       return {
         name: sheetName,
         id: sheetName.toLowerCase().replace(/\s+/g, '-'),
-        icon: sampleIcon
+        icon: coverImage
       };
-    });
+    }));
+    
+    return subjectsWithIcons;
     
   } catch (error) {
     console.error("Error fetching subjects:", error);
