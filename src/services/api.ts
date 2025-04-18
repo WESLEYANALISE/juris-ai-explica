@@ -1,4 +1,3 @@
-
 import { BookData, SubjectData } from "@/types";
 import { cacheUtils } from "@/utils/cache";
 
@@ -115,7 +114,7 @@ export async function fetchBooksBySubject(subject: string): Promise<BookData[]> 
     
     return rows.map((row, index) => ({
       id: `${subject.toLowerCase().replace(/\s+/g, '-')}-${index}`,
-      title: row.Title || row.Nome || "",
+      title: row.A || row.Title || row.Nome || "",
       readLink: row.ReadLink || row.Link || "",
       coverImage: row.CoverImage || row.Imagem || "",
       synopsis: row.Synopsis || row.Sinopse || "",
