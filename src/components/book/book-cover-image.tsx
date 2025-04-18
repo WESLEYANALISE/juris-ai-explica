@@ -9,7 +9,7 @@ interface BookCoverImageProps {
 
 export function BookCoverImage({ coverImage, title, subject }: BookCoverImageProps) {
   return (
-    <div className="aspect-[2/3] overflow-hidden relative">
+    <div className="aspect-[2/3] overflow-hidden relative rounded-md">
       <img 
         src={coverImage} 
         alt={title}
@@ -18,8 +18,8 @@ export function BookCoverImage({ coverImage, title, subject }: BookCoverImagePro
           (e.target as HTMLImageElement).src = '/placeholder.svg';
         }}
       />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex flex-col justify-end p-3">
-        <h3 className="text-sm md:text-base font-bold text-white line-clamp-3 text-left">
+      <div className="absolute inset-0 netflix-gradient flex flex-col justify-end p-3">
+        <h3 className="text-sm md:text-base font-bold text-white line-clamp-2 text-left">
           {title}
         </h3>
         <p className="text-xs text-white/80 mt-1">{subject}</p>

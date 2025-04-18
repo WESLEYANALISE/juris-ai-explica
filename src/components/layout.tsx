@@ -138,25 +138,7 @@ export default function Layout({ children, title }: LayoutProps) {
         {children}
       </main>
       
-      {/* Footer */}
-      <footer className="border-t bg-card py-6">
-        <div className="container flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} JurisBiblioteca. Todos os direitos reservados.
-          </div>
-          <div className="flex items-center gap-4">
-            <a href="#" className="text-sm text-muted-foreground hover:text-foreground">
-              Termos de Uso
-            </a>
-            <a href="#" className="text-sm text-muted-foreground hover:text-foreground">
-              Privacidade
-            </a>
-            <a href="#" className="text-sm text-muted-foreground hover:text-foreground">
-              Sobre
-            </a>
-          </div>
-        </div>
-      </footer>
+      {/* Footer removed as requested */}
     </div>
   );
 }

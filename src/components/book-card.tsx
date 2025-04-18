@@ -9,6 +9,7 @@ import { BookCoverImage } from "./book/book-cover-image";
 import { BookActions } from "./book/book-actions";
 import { BookRatingBadge } from "./book/book-rating-badge";
 import { MobileReadButton } from "./book/mobile-read-button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface BookCardProps {
   book: BookData;
@@ -17,6 +18,7 @@ interface BookCardProps {
 
 export default function BookCard({ book, className }: BookCardProps) {
   const [isFavorite, setIsFavorite] = useState(false);
+  const isMobile = useIsMobile();
   
   useEffect(() => {
     const favorites = userStorage.getFavorites();
@@ -67,13 +69,15 @@ export default function BookCard({ book, className }: BookCardProps) {
             onToggleFavorite={toggleFavorite}
             downloadLink={book.downloadLink}
             onDownload={openDownload}
+            bookId={book.id}
+            subject={book.subject}
           />
           
           {ratingValue > 0 && (
             <BookRatingBadge rating={book.rating} />
           )}
 
-          <MobileReadButton />
+          {!isMobile && <MobileReadButton />}
         </div>
         
         <div className="h-4 md:hidden" />

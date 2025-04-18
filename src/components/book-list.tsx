@@ -75,11 +75,13 @@ export default function BookList({ books, title }: BookListProps) {
         </button>
       </div>
       
-      {/* Book grid */}
+      {/* Book grid with consistent sizes */}
       {filteredBooks.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
           {filteredBooks.map((book) => (
-            <BookCard key={book.id} book={book} />
+            <div key={book.id} className="aspect-[2/3]">
+              <BookCard book={book} className="h-full" />
+            </div>
           ))}
         </div>
       ) : (
